@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "project": "Divulganex",
+    "version": "1.0",
+    "description": "Design system para marketplace de serviços do Nordeste brasileiro. Identidade: energia nordestina, confiança e acessibilidade."
+  },
+  "colors": {
+    "primary": "#E85D04",
+    "primaryDark": "#C44B02",
+    "primaryLight": "#FF8534",
+    "accent": "#1A1A2E",
+    "accentLight": "#2D2D4E",
+    "background": "#FAFAF8",
+    "surface": "#F2F0EB",
+    "surfaceElevated": "#FFFFFF",
+    "text": "#1A1A1A",
+    "textSecondary": "#5C5C5C",
+    "textDisabled": "#A0A0A0",
+    "border": "#E0DDD6",
+    "success": "#16A34A",
+    "warning": "#D97706",
+    "error": "#DC2626",
+    "info": "#2563EB",
+    "overlay": "rgba(26, 26, 46, 0.6)"
+  },
+  "typography": {
+    "display": "Bricolage Grotesque",
+    "body": "Plus Jakarta Sans",
+    "mono": "JetBrains Mono",
+    "note": "NUNCA usar Inter como fonte principal. Bricolage Grotesque para títulos de impacto, Plus Jakarta Sans para leitura confortável."
+  },
+  "fontSizes": {
+    "xs": 11,
+    "sm": 13,
+    "base": 15,
+    "md": 17,
+    "lg": 20,
+    "xl": 24,
+    "2xl": 30,
+    "3xl": 38,
+    "4xl": 48
+  },
+  "fontWeights": {
+    "light": "300",
+    "regular": "400",
+    "medium": "500",
+    "semibold": "600",
+    "bold": "700",
+    "extrabold": "800"
+  },
+  "spacing": {
+    "base": 8,
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "2xl": 48,
+    "3xl": 64
+  },
+  "borderRadius": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "full": 9999
+  },
+  "shadows": {
+    "sm": {
+      "shadowColor": "#1A1A1A",
+      "shadowOffset": { "width": 0, "height": 1 },
+      "shadowOpacity": 0.06,
+      "shadowRadius": 4,
+      "elevation": 2
+    },
+    "md": {
+      "shadowColor": "#1A1A1A",
+      "shadowOffset": { "width": 0, "height": 4 },
+      "shadowOpacity": 0.10,
+      "shadowRadius": 12,
+      "elevation": 5
+    },
+    "lg": {
+      "shadowColor": "#1A1A1A",
+      "shadowOffset": { "width": 0, "height": 8 },
+      "shadowOpacity": 0.14,
+      "shadowRadius": 24,
+      "elevation": 10
+    }
+  },
+  "components": {
+    "button": {
+      "primary": {
+        "background": "#E85D04",
+        "text": "#FFFFFF",
+        "borderRadius": 12,
+        "paddingVertical": 14,
+        "paddingHorizontal": 24,
+        "fontSize": 16,
+        "fontWeight": "700"
+      },
+      "secondary": {
+        "background": "transparent",
+        "text": "#E85D04",
+        "border": "#E85D04",
+        "borderWidth": 2,
+        "borderRadius": 12
+      },
+      "ghost": {
+        "background": "transparent",
+        "text": "#1A1A2E"
+      }
+    },
+    "card": {
+      "background": "#FFFFFF",
+      "borderRadius": 16,
+      "padding": 16,
+      "shadow": "md"
+    },
+    "input": {
+      "background": "#F2F0EB",
+      "border": "#E0DDD6",
+      "borderRadius": 12,
+      "padding": 14,
+      "fontSize": 15,
+      "focusBorder": "#E85D04"
+    },
+    "badge": {
+      "task": { "background": "#FEF3C7", "text": "#92400E" },
+      "professional": { "background": "#DBEAFE", "text": "#1E40AF" },
+      "verified": { "background": "#DCFCE7", "text": "#166534" },
+      "pending": { "background": "#FEF9C3", "text": "#854D0E" }
+    }
+  }
+}
