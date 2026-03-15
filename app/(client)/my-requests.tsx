@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
@@ -37,6 +37,29 @@ export default function MyRequestsScreen() {
     setRefreshing(true)
     await loadRequests()
     setRefreshing(false)
+  }
+
+  async function handleRate(requestId: string, requestTitle: string) {
+    const { data } = await supabase
+      .from('proposals')
+      .select('professional_id, professional:profiles!professional_id(name)')
+      .eq('request_id', requestId)
+      .eq('contact_revealed', true)
+      .maybeSingle()
+
+    if (!data) {
+      Alert.alert('Nenhum profissional encontrado', 'Não há profissional vinculado a este pedido para avaliar.')
+      return
+    }
+
+    router.push({
+      pathname: '/(client)/leave-review',
+      params: {
+        professionalId: data.professional_id,
+        requestId,
+        professionalName: (data.professional as any)?.name ?? 'Profissional',
+      }
+    })
   }
 
   function timeAgo(dateStr: string) {
@@ -87,8 +110,8 @@ export default function MyRequestsScreen() {
                       <Text className="text-gray-400 text-xs">{timeAgo(req.created_at)}</Text>
                     </View>
                     <Text className="text-gray-800 font-bold text-base mb-1">{req.title}</Text>
-                    <Text className="text-gray-500 text-sm mb-2" numberOfLines={2}>{req.description}</Text>
-                    <View className="flex-row items-center gap-2">
+                    <Text className="text-gray-500 text-sm mb-3" numberOfLines={2}>{req.description}</Text>
+                    <View className="flex-row items-center gap-2 mb-3">
                       <Text className="text-xs">{req.category?.icon}</Text>
                       <Text className="text-gray-400 text-xs">{req.category?.name}</Text>
                       <Text className="text-gray-300">•</Text>
@@ -96,6 +119,14 @@ export default function MyRequestsScreen() {
                         {req.mode === 'task' ? '⚡ Tarefa' : '🛠️ Serviço'}
                       </Text>
                     </View>
+                    {req.status === 'closed' && (
+                      <TouchableOpacity
+                        className="bg-orange-50 border border-orange-200 rounded-xl py-2 items-center"
+                        onPress={() => handleRate(req.id, req.title)}
+                      >
+                        <Text className="text-orange-600 text-sm font-semibold">⭐ Avaliar profissional</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 )
               })}
