@@ -4,7 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { getWalletBalance, debitWallet } from '@/lib/wallet'
 import { ServiceRequest, Proposal } from '@/lib/types'
+
+const REVEAL_COST = 3
 
 export default function RequestDetailScreen() {
   const router = useRouter()
@@ -14,6 +17,7 @@ export default function RequestDetailScreen() {
   const [request, setRequest] = useState<ServiceRequest | null>(null)
   const [proposal, setProposal] = useState<Proposal | null>(null)
   const [clientPhone, setClientPhone] = useState<string | null>(null)
+  const [walletBalance, setWalletBalance] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [chatLoading, setChatLoading] = useState(false)
