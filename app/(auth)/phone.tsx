@@ -4,35 +4,23 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 
-export default function PhoneScreen() {
+export default function EmailScreen() {
   const router = useRouter()
   const { role } = useLocalSearchParams<{ role: 'client' | 'professional' | 'login' }>()
   const isLogin = role === 'login'
-  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function formatPhone(text: string) {
-    const digits = text.replace(/\D/g, '').slice(0, 11)
-    if (digits.length <= 2) return digits
-    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
-  }
-
-  function getE164(phone: string) {
-    const digits = phone.replace(/\D/g, '')
-    return `+55${digits}`
-  }
-
   async function handleSendOTP() {
-    const digits = phone.replace(/\D/g, '')
-    if (digits.length < 10) {
-      Alert.alert('Telefone inválido', 'Informe um número com DDD e 9 dígitos.')
+    if (!email.includes('@') || !email.includes('.')) {
+      Alert.alert('E-mail inválido', 'Informe um endereço de e-mail válido.')
       return
     }
 
     setLoading(true)
     const { error } = await supabase.auth.signInWithOtp({
-      phone: getE164(phone),
+      email: email.trim().toLowerCase(),
+      options: { shouldCreateUser: true },
     })
     setLoading(false)
 
@@ -43,7 +31,7 @@ export default function PhoneScreen() {
 
     router.push({
       pathname: '/(auth)/otp',
-      params: { phone: getE164(phone), role },
+      params: { email: email.trim().toLowerCase(), role },
     })
   }
 
@@ -61,26 +49,24 @@ export default function PhoneScreen() {
             </TouchableOpacity>
 
             <Text className="text-2xl font-bold text-gray-800">
-              {isLogin ? 'Bem-vindo de volta!' : 'Qual é o seu número?'}
+              {isLogin ? 'Bem-vindo de volta!' : 'Qual é o seu e-mail?'}
             </Text>
             <Text className="text-gray-500 mt-2 text-sm">
               {isLogin
-                ? 'Informe seu número para entrar na sua conta.'
-                : 'Vamos enviar um código de verificação por SMS.'}
+                ? 'Informe seu e-mail para entrar na sua conta.'
+                : 'Vamos enviar um código de verificação por e-mail.'}
             </Text>
 
             <View className="mt-8">
-              <View className="flex-row items-center border-2 border-gray-200 rounded-2xl px-4 h-14 focus-within:border-orange-500">
-                <Text className="text-gray-500 mr-2">🇧🇷 +55</Text>
-                <TextInput
-                  className="flex-1 text-gray-800 text-base"
-                  placeholder="(85) 99999-9999"
-                  keyboardType="phone-pad"
-                  value={phone}
-                  onChangeText={(t) => setPhone(formatPhone(t))}
-                  maxLength={15}
-                />
-              </View>
+              <TextInput
+                className="border-2 border-gray-200 rounded-2xl px-4 h-14 text-gray-800 text-base"
+                placeholder="seu@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+              />
             </View>
           </View>
 

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 
 export default function OtpScreen() {
   const router = useRouter()
-  const { phone, role } = useLocalSearchParams<{ phone: string; role: 'client' | 'professional' | 'login' }>()
+  const { email, role } = useLocalSearchParams<{ email: string; role: 'client' | 'professional' | 'login' }>()
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const inputs = useRef<(TextInput | null)[]>([])
@@ -35,9 +35,9 @@ export default function OtpScreen() {
 
     setLoading(true)
     const { data, error } = await supabase.auth.verifyOtp({
-      phone,
+      email,
       token: code,
-      type: 'sms',
+      type: 'email',
     })
     setLoading(false)
 
@@ -56,7 +56,7 @@ export default function OtpScreen() {
     if (!profile) {
       if (role === 'login') {
         // Tentativa de login com número não cadastrado
-        Alert.alert('Conta não encontrada', 'Este número não possui cadastro. Volte e escolha "Quero contratar" ou "Quero trabalhar" para criar sua conta.')
+        Alert.alert('Conta não encontrada', 'Este e-mail não possui cadastro. Volte e escolha "Quero contratar" ou "Quero trabalhar" para criar sua conta.')
         return
       }
       // Primeiro acesso → ir para registro
@@ -82,7 +82,7 @@ export default function OtpScreen() {
 
             <Text className="text-2xl font-bold text-gray-800">Código de verificação</Text>
             <Text className="text-gray-500 mt-2 text-sm">
-              Enviamos um SMS para <Text className="font-semibold text-gray-700">{phone}</Text>
+              Enviamos um código para <Text className="font-semibold text-gray-700">{email}</Text>
             </Text>
 
             <View className="flex-row justify-between mt-10">
@@ -103,11 +103,11 @@ export default function OtpScreen() {
             <TouchableOpacity
               className="mt-6 items-center"
               onPress={async () => {
-                const { error } = await supabase.auth.signInWithOtp({ phone })
+                const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
                 if (error) {
                   Alert.alert('Erro ao reenviar', error.message)
                 } else {
-                  Alert.alert('Código reenviado', 'Verifique seu SMS.')
+                  Alert.alert('Código reenviado', 'Verifique seu e-mail.')
                 }
               }}
             >
