@@ -16,6 +16,7 @@ export default function RequestDetailScreen() {
   const [clientPhone, setClientPhone] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -98,6 +99,33 @@ export default function RequestDetailScreen() {
     setActionLoading(false)
   }
 
+  async function handleStartChat() {
+    if (!profile || !request) return
+    setChatLoading(true)
+
+    const { data, error } = await supabase
+      .from('conversations')
+      .upsert(
+        {
+          client_id: request.client_id,
+          professional_id: profile.id,
+          request_id: request.id,
+        },
+        { onConflict: 'client_id,professional_id,request_id' }
+      )
+      .select('id')
+      .single()
+
+    setChatLoading(false)
+
+    if (error || !data) {
+      Alert.alert('Erro', 'Não foi possível iniciar a conversa. Tente novamente.')
+      return
+    }
+
+    router.push({ pathname: '/chat/[id]', params: { id: data.id } })
+  }
+
   function openWhatsApp(phone: string) {
     const clean = phone.replace(/\D/g, '')
     Linking.openURL(`https://wa.me/${clean}`)
@@ -168,10 +196,19 @@ export default function RequestDetailScreen() {
             <Text className="text-green-700 font-bold mb-1">✅ Contato revelado</Text>
             <Text className="text-green-600 text-sm mb-3">Telefone: {clientPhone}</Text>
             <TouchableOpacity
-              className="bg-green-500 rounded-xl py-3 items-center"
+              className="bg-green-500 rounded-xl py-3 items-center mb-3"
               onPress={() => openWhatsApp(clientPhone)}
             >
               <Text className="text-white font-bold">📱 Abrir WhatsApp</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`rounded-xl py-3 items-center ${chatLoading ? 'bg-orange-300' : 'bg-orange-500'}`}
+              onPress={handleStartChat}
+              disabled={chatLoading}
+            >
+              <Text className="text-white font-bold">
+                {chatLoading ? 'Abrindo...' : '💬 Conversar no chat'}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : proposal && !proposal.contact_revealed ? (

@@ -33,11 +33,22 @@ export default function ClientLayout() {
         }}
       />
       <Tabs.Screen
+        name="conversations"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="new-request"
         options={{ href: null }}
       />
       <Tabs.Screen
         name="leave-review"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="request-detail"
         options={{ href: null }}
       />
     </Tabs>
