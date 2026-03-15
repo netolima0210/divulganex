@@ -33,6 +33,10 @@ export default function ClientLayout() {
         }}
       />
       <Tabs.Screen
+        name="new-request"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="leave-review"
         options={{ href: null }}
       />

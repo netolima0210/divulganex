@@ -33,6 +33,10 @@ export default function ProfessionalLayout() {
         }}
       />
       <Tabs.Screen
+        name="request-detail"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="public-profile"
         options={{ href: null }}
       />
