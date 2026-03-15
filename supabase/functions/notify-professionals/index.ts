@@ -4,7 +4,26 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': 'https://supabase.com',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS_HEADERS })
+  }
+
+  // Only allow POST from Supabase internal triggers (service role)
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const payload = await req.json()
     const record = payload.record // new service_request row
@@ -21,7 +40,10 @@ serve(async (req) => {
       .not('push_token', 'is', null)
 
     if (!professionals || professionals.length === 0) {
-      return new Response(JSON.stringify({ sent: 0 }), { status: 200 })
+      return new Response(JSON.stringify({ sent: 0 }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      })
     }
 
     // Filter by category match
@@ -35,7 +57,10 @@ serve(async (req) => {
     const targets = professionals.filter((p: any) => matchedIds.has(p.id))
 
     if (targets.length === 0) {
-      return new Response(JSON.stringify({ sent: 0 }), { status: 200 })
+      return new Response(JSON.stringify({ sent: 0 }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      })
     }
 
     // Get category name
@@ -74,8 +99,14 @@ serve(async (req) => {
       }))
     )
 
-    return new Response(JSON.stringify({ sent: targets.length, result }), { status: 200 })
+    return new Response(JSON.stringify({ sent: targets.length, result }), {
+      status: 200,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    return new Response(JSON.stringify({ error: String(error) }), { status: 500 })
+    return new Response(JSON.stringify({ error: String(error) }), {
+      status: 500,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
   }
 })
