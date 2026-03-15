@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import { useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'expo-router'
@@ -23,6 +24,12 @@ const MODES = [
 export default function ClientHome() {
   const { profile, signOut } = useAuth()
   const router = useRouter()
+  const [search, setSearch] = useState('')
+
+  const filteredModes = MODES.filter((mode) =>
+    mode.title.toLowerCase().includes(search.toLowerCase()) ||
+    mode.description.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -38,20 +45,45 @@ export default function ClientHome() {
           </TouchableOpacity>
         </View>
 
+        {/* SearchBar */}
+        <View className="flex-row items-center border-2 border-gray-200 rounded-2xl px-4 h-12 mb-4 bg-gray-50">
+          <Text className="text-gray-400 mr-2">🔍</Text>
+          <TextInput
+            className="flex-1 text-gray-800 text-sm"
+            placeholder="Buscar tipo de serviço..."
+            placeholderTextColor="#9CA3AF"
+            value={search}
+            onChangeText={setSearch}
+            returnKeyType="search"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')}>
+              <Text className="text-gray-400 text-base">✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         <Text className="text-base text-gray-600 mb-4">O que você precisa hoje?</Text>
 
         <View className="gap-4 mb-8">
-          {MODES.map((mode) => (
-            <TouchableOpacity
-              key={mode.id}
-              className={`border-2 rounded-2xl p-5 ${mode.color}`}
-              onPress={() => router.push({ pathname: '/(client)/new-request', params: { mode: mode.id } })}
-            >
-              <Text className="text-3xl mb-2">{mode.emoji}</Text>
-              <Text className="text-base font-bold text-gray-800">{mode.title}</Text>
-              <Text className="text-gray-500 text-sm mt-1">{mode.description}</Text>
-            </TouchableOpacity>
-          ))}
+          {filteredModes.length === 0 ? (
+            <View className="items-center py-10">
+              <Text className="text-3xl mb-3">🔍</Text>
+              <Text className="text-gray-500 text-center">Nenhum resultado para "{search}"</Text>
+            </View>
+          ) : (
+            filteredModes.map((mode) => (
+              <TouchableOpacity
+                key={mode.id}
+                className={`border-2 rounded-2xl p-5 ${mode.color}`}
+                onPress={() => router.push({ pathname: '/(client)/new-request', params: { mode: mode.id } })}
+              >
+                <Text className="text-3xl mb-2">{mode.emoji}</Text>
+                <Text className="text-base font-bold text-gray-800">{mode.title}</Text>
+                <Text className="text-gray-500 text-sm mt-1">{mode.description}</Text>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
         <Text className="text-sm text-center text-gray-400 mb-6">

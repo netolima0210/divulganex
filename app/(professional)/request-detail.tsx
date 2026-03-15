@@ -74,18 +74,27 @@ export default function RequestDetailScreen() {
       .update({ contact_revealed: true })
       .eq('id', proposal!.id)
 
-    if (!error) {
-      const { data: clientData } = await supabase
-        .from('profiles')
-        .select('phone')
-        .eq('id', request!.client_id)
-        .single()
-
-      if (clientData?.phone) {
-        setClientPhone(clientData.phone)
-        setProposal(prev => prev ? { ...prev, contact_revealed: true } : prev)
-      }
+    if (error) {
+      setActionLoading(false)
+      Alert.alert('Erro', 'Não foi possível revelar o contato. Tente novamente.')
+      return
     }
+
+    const { data: clientData, error: phoneError } = await supabase
+      .from('profiles')
+      .select('phone')
+      .eq('id', request!.client_id)
+      .single()
+
+    if (phoneError || !clientData?.phone) {
+      setActionLoading(false)
+      Alert.alert('Aviso', 'Contato revelado, mas não foi possível carregar o número do cliente.')
+      setProposal(prev => prev ? { ...prev, contact_revealed: true } : prev)
+      return
+    }
+
+    setClientPhone(clientData.phone)
+    setProposal(prev => prev ? { ...prev, contact_revealed: true } : prev)
     setActionLoading(false)
   }
 
