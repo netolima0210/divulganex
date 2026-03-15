@@ -4,7 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { getWalletBalance, debitWallet } from '@/lib/wallet'
 import { ServiceRequest, Proposal } from '@/lib/types'
+
+const REVEAL_COST = 3
 
 export default function RequestDetailScreen() {
   const router = useRouter()
@@ -14,8 +17,10 @@ export default function RequestDetailScreen() {
   const [request, setRequest] = useState<ServiceRequest | null>(null)
   const [proposal, setProposal] = useState<Proposal | null>(null)
   const [clientPhone, setClientPhone] = useState<string | null>(null)
+  const [walletBalance, setWalletBalance] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -43,6 +48,10 @@ export default function RequestDetailScreen() {
         setClientPhone((reqData.client as any).phone)
       }
     }
+
+    const balance = await getWalletBalance(profile!.id)
+    setWalletBalance(balance)
+
     setLoading(false)
   }
 
@@ -68,11 +77,49 @@ export default function RequestDetailScreen() {
   }
 
   async function handleRevealContact() {
+    if (!proposal || !request) return
+
+    // Re-check balance before revealing
+    const currentBalance = await getWalletBalance(profile!.id)
+    setWalletBalance(currentBalance)
+
+    if (currentBalance < REVEAL_COST) {
+      Alert.alert(
+        'Saldo insuficiente',
+        `Você tem ${currentBalance} moeda${currentBalance !== 1 ? 's' : ''}. São necessárias ${REVEAL_COST} moedas para revelar o contato.`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Comprar moedas',
+            onPress: () => router.push('/(professional)/wallet'),
+          },
+        ]
+      )
+      return
+    }
+
     setActionLoading(true)
+
+    // Debit wallet first
+    const debitResult = await debitWallet(
+      profile!.id,
+      REVEAL_COST,
+      `Revelar contato - ${request.title}`,
+      request.id
+    )
+
+    if (!debitResult.success) {
+      setActionLoading(false)
+      Alert.alert('Erro', debitResult.error ?? 'Não foi possível debitar as moedas. Tente novamente.')
+      return
+    }
+
+    setWalletBalance(debitResult.newBalance)
+
     const { error } = await supabase
       .from('proposals')
       .update({ contact_revealed: true })
-      .eq('id', proposal!.id)
+      .eq('id', proposal.id)
 
     if (error) {
       setActionLoading(false)
@@ -83,7 +130,7 @@ export default function RequestDetailScreen() {
     const { data: clientData, error: phoneError } = await supabase
       .from('profiles')
       .select('phone')
-      .eq('id', request!.client_id)
+      .eq('id', request.client_id)
       .single()
 
     if (phoneError || !clientData?.phone) {
@@ -96,6 +143,33 @@ export default function RequestDetailScreen() {
     setClientPhone(clientData.phone)
     setProposal(prev => prev ? { ...prev, contact_revealed: true } : prev)
     setActionLoading(false)
+  }
+
+  async function handleStartChat() {
+    if (!profile || !request) return
+    setChatLoading(true)
+
+    const { data, error } = await supabase
+      .from('conversations')
+      .upsert(
+        {
+          client_id: request.client_id,
+          professional_id: profile.id,
+          request_id: request.id,
+        },
+        { onConflict: 'client_id,professional_id,request_id' }
+      )
+      .select('id')
+      .single()
+
+    setChatLoading(false)
+
+    if (error || !data) {
+      Alert.alert('Erro', 'Não foi possível iniciar a conversa. Tente novamente.')
+      return
+    }
+
+    router.push({ pathname: '/chat/[id]', params: { id: data.id } })
   }
 
   function openWhatsApp(phone: string) {
@@ -134,9 +208,19 @@ export default function RequestDetailScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
 
-        <TouchableOpacity onPress={() => router.back()} className="mb-6">
-          <Text className="text-orange-500 text-base">← Voltar</Text>
-        </TouchableOpacity>
+        {/* Top bar: back + wallet balance */}
+        <View className="flex-row items-center justify-between mb-6">
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text className="text-orange-500 text-base">← Voltar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center gap-1 bg-orange-50 px-3 py-1.5 rounded-xl"
+            onPress={() => router.push('/(professional)/wallet')}
+          >
+            <Text className="text-orange-700 text-sm font-semibold">Saldo: {walletBalance}</Text>
+            <Text className="text-orange-500 text-sm">⬡</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Mode badge */}
         <View className={`px-3 py-1 rounded-xl self-start mb-3 ${request.mode === 'task' ? 'bg-yellow-100' : 'bg-orange-100'}`}>
@@ -168,16 +252,29 @@ export default function RequestDetailScreen() {
             <Text className="text-green-700 font-bold mb-1">✅ Contato revelado</Text>
             <Text className="text-green-600 text-sm mb-3">Telefone: {clientPhone}</Text>
             <TouchableOpacity
-              className="bg-green-500 rounded-xl py-3 items-center"
+              className="bg-green-500 rounded-xl py-3 items-center mb-3"
               onPress={() => openWhatsApp(clientPhone)}
             >
               <Text className="text-white font-bold">📱 Abrir WhatsApp</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`rounded-xl py-3 items-center ${chatLoading ? 'bg-orange-300' : 'bg-orange-500'}`}
+              onPress={handleStartChat}
+              disabled={chatLoading}
+            >
+              <Text className="text-white font-bold">
+                {chatLoading ? 'Abrindo...' : '💬 Conversar no chat'}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : proposal && !proposal.contact_revealed ? (
           <View className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mb-4">
             <Text className="text-blue-700 font-bold mb-1">👍 Interesse demonstrado</Text>
-            <Text className="text-blue-600 text-sm mb-3">Toque abaixo para ver o contato do cliente e fechar o serviço.</Text>
+            <Text className="text-blue-600 text-sm mb-2">Toque abaixo para ver o contato do cliente e fechar o serviço.</Text>
+            <View className="flex-row items-center gap-1 mb-3">
+              <Text className="text-blue-500 text-xs">Custo:</Text>
+              <Text className="text-blue-700 text-xs font-bold">{REVEAL_COST} moedas ⬡</Text>
+            </View>
             <TouchableOpacity
               className={`rounded-xl py-3 items-center ${actionLoading ? 'bg-blue-300' : 'bg-blue-500'}`}
               onPress={handleRevealContact}

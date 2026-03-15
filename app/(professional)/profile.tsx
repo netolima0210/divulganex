@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { Category } from '@/lib/types'
 
 export default function ProfessionalProfile() {
   const { profile, signOut } = useAuth()
+  const router = useRouter()
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCats, setSelectedCats] = useState<string[]>([])
   const [bio, setBio] = useState(profile?.bio ?? '')
@@ -150,6 +152,13 @@ export default function ProfessionalProfile() {
           <Text className="text-white font-bold text-base">
             {saving ? 'Salvando...' : 'Salvar perfil'}
           </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="border-2 border-orange-200 rounded-2xl py-4 items-center mb-4"
+          onPress={() => router.push('/(professional)/portfolio')}
+        >
+          <Text className="text-orange-500 font-semibold">🖼️ Ver Portfólio</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
