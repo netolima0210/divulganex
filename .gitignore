@@ -1,5 +1,12 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# Vault e credenciais
+.vault-context
+.env
+.env.local
+.env*.local
+.mcp.json
+
 # dependencies
 node_modules/
 
@@ -32,6 +39,12 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+.env.local
+.env.production
+
+# Shark vault
+*.vault
 
 # typescript
 *.tsbuildinfo
