@@ -16,6 +16,11 @@ export default function RegisterScreen() {
   const [cpfCnpj, setCpfCnpj] = useState('')
   const [loading, setLoading] = useState(false)
 
+  function validateCpfCnpj(value: string): boolean {
+    const digits = value.replace(/\D/g, '')
+    return digits.length === 11 || digits.length === 14
+  }
+
   async function handleRegister() {
     if (!name.trim() || !city.trim() || !state) {
       Alert.alert('Campos obrigatórios', 'Preencha nome, cidade e estado.')
@@ -23,6 +28,10 @@ export default function RegisterScreen() {
     }
     if (isProfessional && !cpfCnpj.trim()) {
       Alert.alert('CPF/CNPJ obrigatório', 'Profissionais precisam informar CPF ou CNPJ.')
+      return
+    }
+    if (isProfessional && !validateCpfCnpj(cpfCnpj)) {
+      Alert.alert('CPF/CNPJ inválido', 'CPF deve ter 11 dígitos e CNPJ deve ter 14 dígitos.')
       return
     }
 

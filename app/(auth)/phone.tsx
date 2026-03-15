@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabase'
 
 export default function PhoneScreen() {
   const router = useRouter()
-  const { role } = useLocalSearchParams<{ role: 'client' | 'professional' }>()
+  const { role } = useLocalSearchParams<{ role: 'client' | 'professional' | 'login' }>()
+  const isLogin = role === 'login'
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -60,10 +61,12 @@ export default function PhoneScreen() {
             </TouchableOpacity>
 
             <Text className="text-2xl font-bold text-gray-800">
-              Qual é o seu número?
+              {isLogin ? 'Bem-vindo de volta!' : 'Qual é o seu número?'}
             </Text>
             <Text className="text-gray-500 mt-2 text-sm">
-              Vamos enviar um código de verificação por SMS.
+              {isLogin
+                ? 'Informe seu número para entrar na sua conta.'
+                : 'Vamos enviar um código de verificação por SMS.'}
             </Text>
 
             <View className="mt-8">

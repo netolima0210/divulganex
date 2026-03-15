@@ -44,7 +44,7 @@ export default function WelcomeScreen() {
 
           <TouchableOpacity
             className="items-center py-2"
-            onPress={() => router.push({ pathname: '/(auth)/phone', params: { role: 'client' } })}
+            onPress={() => router.push({ pathname: '/(auth)/phone', params: { role: 'login' } })}
           >
             <Text className="text-gray-400 text-sm">Já tenho conta — <Text className="text-orange-500 font-semibold">Entrar</Text></Text>
           </TouchableOpacity>
