@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 
 export default function OtpScreen() {
   const router = useRouter()
-  const { phone, role } = useLocalSearchParams<{ phone: string; role: 'client' | 'professional' }>()
+  const { phone, role } = useLocalSearchParams<{ phone: string; role: 'client' | 'professional' | 'login' }>()
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const inputs = useRef<(TextInput | null)[]>([])
@@ -54,6 +54,11 @@ export default function OtpScreen() {
       .single()
 
     if (!profile) {
+      if (role === 'login') {
+        // Tentativa de login com número não cadastrado
+        Alert.alert('Conta não encontrada', 'Este número não possui cadastro. Volte e escolha "Quero contratar" ou "Quero trabalhar" para criar sua conta.')
+        return
+      }
       // Primeiro acesso → ir para registro
       router.replace({ pathname: '/(auth)/register', params: { role } })
     } else {
@@ -95,7 +100,17 @@ export default function OtpScreen() {
               ))}
             </View>
 
-            <TouchableOpacity className="mt-6 items-center">
+            <TouchableOpacity
+              className="mt-6 items-center"
+              onPress={async () => {
+                const { error } = await supabase.auth.signInWithOtp({ phone })
+                if (error) {
+                  Alert.alert('Erro ao reenviar', error.message)
+                } else {
+                  Alert.alert('Código reenviado', 'Verifique seu SMS.')
+                }
+              }}
+            >
               <Text className="text-gray-400 text-sm">
                 Não recebeu? <Text className="text-orange-500 font-semibold">Reenviar código</Text>
               </Text>
