@@ -36,13 +36,38 @@ export default function ProfessionalProfile() {
   async function handleSave() {
     setSaving(true)
 
-    await supabase.from('profiles').update({ bio: bio.trim() || null }).eq('id', profile!.id)
-    await supabase.from('professional_categories').delete().eq('professional_id', profile!.id)
+    const { error: bioError } = await supabase
+      .from('profiles')
+      .update({ bio: bio.trim() || null })
+      .eq('id', profile!.id)
+
+    if (bioError) {
+      setSaving(false)
+      Alert.alert('Erro', 'Não foi possível salvar sua apresentação. Tente novamente.')
+      return
+    }
+
+    const { error: deleteError } = await supabase
+      .from('professional_categories')
+      .delete()
+      .eq('professional_id', profile!.id)
+
+    if (deleteError) {
+      setSaving(false)
+      Alert.alert('Erro', 'Não foi possível atualizar suas categorias. Tente novamente.')
+      return
+    }
 
     if (selectedCats.length > 0) {
-      await supabase.from('professional_categories').insert(
-        selectedCats.map(catId => ({ professional_id: profile!.id, category_id: catId }))
-      )
+      const { error: insertError } = await supabase
+        .from('professional_categories')
+        .insert(selectedCats.map(catId => ({ professional_id: profile!.id, category_id: catId })))
+
+      if (insertError) {
+        setSaving(false)
+        Alert.alert('Erro', 'Não foi possível salvar suas categorias. Tente novamente.')
+        return
+      }
     }
 
     setSaving(false)

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useAuth } from '@/context/AuthContext'
@@ -29,7 +29,11 @@ export default function ProfessionalHome() {
       query = query.eq('mode', filter)
     }
 
-    const { data } = await query
+    const { data, error } = await query
+    if (error) {
+      Alert.alert('Erro', 'Não foi possível carregar os pedidos. Tente novamente.')
+      return
+    }
     if (data) setRequests(data)
   }, [filter, profile?.state])
 

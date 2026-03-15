@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
@@ -29,11 +29,15 @@ export default function MyServicesScreen() {
   const [refreshing, setRefreshing] = useState(false)
 
   const loadProposals = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('proposals')
       .select('id, status, contact_revealed, created_at, request:service_requests(id, title, mode, city, state, status, category:categories(name, icon))')
       .eq('professional_id', profile!.id)
       .order('created_at', { ascending: false })
+    if (error) {
+      Alert.alert('Erro', 'Não foi possível carregar seus serviços. Tente novamente.')
+      return
+    }
     if (data) setProposals(data as ProposalWithRequest[])
   }, [profile])
 

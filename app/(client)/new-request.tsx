@@ -24,12 +24,16 @@ export default function NewRequestScreen() {
   }, [])
 
   async function loadCategories() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('categories')
       .select('*')
       .in('type', [mode, 'both'])
       .eq('active', true)
       .order('name')
+    if (error) {
+      Alert.alert('Erro', 'Não foi possível carregar as categorias. Tente novamente.')
+      return
+    }
     if (data) setCategories(data)
   }
 

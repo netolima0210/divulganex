@@ -21,11 +21,15 @@ export default function MyRequestsScreen() {
   const [refreshing, setRefreshing] = useState(false)
 
   const loadRequests = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('service_requests')
       .select('*, category:categories(*)')
       .eq('client_id', profile!.id)
       .order('created_at', { ascending: false })
+    if (error) {
+      Alert.alert('Erro', 'Não foi possível carregar seus pedidos. Tente novamente.')
+      return
+    }
     if (data) setRequests(data)
   }, [profile])
 
