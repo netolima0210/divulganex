@@ -81,6 +81,23 @@ export interface Notification {
   created_at: string
 }
 
+export interface Conversation {
+  id: string
+  client_id: string
+  professional_id: string
+  request_id: string | null
+  created_at: string
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  read: boolean
+  created_at: string
+}
+
 export const NORDESTE_STATES = [
   { label: 'Alagoas', value: 'AL' },
   { label: 'Bahia', value: 'BA' },

@@ -33,11 +33,36 @@ export default function ProfessionalLayout() {
         }}
       />
       <Tabs.Screen
+        name="conversations"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notificações',
+          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="wallet"
+        options={{
+          title: 'Carteira',
+          tabBarIcon: ({ color, size }) => <Ionicons name="wallet-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="request-detail"
         options={{ href: null }}
       />
       <Tabs.Screen
         name="public-profile"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="portfolio"
         options={{ href: null }}
       />
     </Tabs>

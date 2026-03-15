@@ -106,7 +106,12 @@ export default function MyRequestsScreen() {
               {requests.map((req) => {
                 const statusCfg = STATUS_CONFIG[req.status] ?? STATUS_CONFIG.open
                 return (
-                  <View key={req.id} className="bg-white border-2 border-gray-100 rounded-2xl p-4">
+                  <TouchableOpacity
+                    key={req.id}
+                    className="bg-white border-2 border-gray-100 rounded-2xl p-4"
+                    onPress={() => router.push({ pathname: '/(client)/request-detail', params: { requestId: req.id } })}
+                    activeOpacity={0.85}
+                  >
                     <View className="flex-row items-start justify-between mb-2">
                       <View className={`px-2 py-0.5 rounded-lg ${statusCfg.color}`}>
                         <Text className={`text-xs font-semibold ${statusCfg.textColor}`}>{statusCfg.label}</Text>
@@ -126,12 +131,12 @@ export default function MyRequestsScreen() {
                     {req.status === 'closed' && (
                       <TouchableOpacity
                         className="bg-orange-50 border border-orange-200 rounded-xl py-2 items-center"
-                        onPress={() => handleRate(req.id, req.title)}
+                        onPress={(e) => { e.stopPropagation?.(); handleRate(req.id, req.title) }}
                       >
                         <Text className="text-orange-600 text-sm font-semibold">⭐ Avaliar profissional</Text>
                       </TouchableOpacity>
                     )}
-                  </View>
+                  </TouchableOpacity>
                 )
               })}
             </View>
